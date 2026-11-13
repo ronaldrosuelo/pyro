@@ -1,5 +1,10 @@
 {
   "appId": "com.myshop.admin",
   "appName": "pyro app",
-  "webDir": "www"
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "your-site.vercel.app",
+    "cleartext": true
+  }
 }
