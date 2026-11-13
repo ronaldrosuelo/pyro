@@ -2,36 +2,45 @@
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Shop</title>
-<meta property="og:title" content="Shop"><meta property="og:description" content="Browse items and message me on Messenger to order.">
+<meta name="theme-color" content="#0b1026">
+<title>Flashpoint Pyro</title>
+<meta property="og:title" content="Flashpoint Pyro"><meta property="og:description" content="Browse items and place your order.">
 <link rel="stylesheet" href="style.css"><script src="config.js"></script>
 </head><body>
-<header><h1 id="shop"></h1><p id="tag"></p></header>
+<header class="hero">
+  <span class="eyebrow">🎆 Happy New Year</span>
+  <h1 id="shop"></h1><p id="tag"></p>
+</header>
 <div class="wrap">
-  <div class="chips" id="chips"></div>
+  <nav class="chips" id="chips" aria-label="Categories"></nav>
   <div class="grid" id="grid"></div>
   <p class="empty hide" id="empty">No items yet. Check back soon.</p>
 </div>
+<footer>🎇 Celebrate safely and have a bright New Year</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 const C=window.CONFIG,sb=supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 document.title=C.SHOP_NAME;shop.textContent=C.SHOP_NAME;tag.textContent=C.TAGLINE;
-let items=[],cat="All";
+let items=[],cat="All",categories=["All"];
 function render(){
-  chips.innerHTML=["All",...C.CATEGORIES].map(c=>`<button class="chip ${c===cat?"on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  chips.innerHTML=categories.map(c=>`<button class="chip ${c===cat?"on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  chips.classList.toggle("hide",categories.length<2);
   const list=items.filter(i=>cat==="All"||i.category===cat);
   empty.classList.toggle("hide",list.length>0);
   grid.innerHTML=list.map(i=>`<article class="card ${i.sold_out?"sold":""}">
-    ${i.image_url?`<img src="${esc(i.image_url)}" alt="${esc(i.name)}" loading="lazy">`:`<div class="ph"></div>`}
+    <div class="media">${i.image_url?`<img src="${esc(i.image_url)}" alt="${esc(i.name)}" loading="lazy">`:`<div class="ph"></div>`}${i.sold_out?`<span class="badge">Sold out</span>`:""}</div>
     <div class="body"><div class="name">${esc(i.name)}</div><div class="price">₱${Number(i.price).toLocaleString()}</div>
-    <div class="desc">${esc(i.description)}</div>
-    ${i.sold_out?`<div class="tag">Sold out</div>`:`<a class="btn pri" target="_blank" rel="noopener" href="https://m.me/${encodeURIComponent(C.MESSENGER_USERNAME)}">Message to order</a>`}
+    ${i.description?`<div class="desc">${esc(i.description)}</div>`:""}
     </div></article>`).join("");
 }
 chips.onclick=e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;render()}};
-sb.from("products").select("*").order("created_at",{ascending:false}).then(({data,error})=>{
+async function loadItems(){
+  const{data,error}=await sb.from("products").select("*").order("created_at",{ascending:false});
   if(error){empty.textContent="Couldn't load items. Refresh the page.";empty.classList.remove("hide");return}
-  items=data;render();
-});
+  items=data;
+  categories=["All",...new Set(items.map(i=>i.category).filter(Boolean))];
+  render();
+}
+loadItems();
 </script></body></html>
