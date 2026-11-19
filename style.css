@@ -91,8 +91,10 @@ h1{
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  grid-template-rows:auto;
   gap:14px;
   margin-block-start:16px;
+  align-items:start;
 }
 
 /* ── Card ── */
@@ -100,8 +102,7 @@ h1{
   container:card/inline-size;
   background:var(--card);border:1px solid var(--line);
   border-radius:var(--radius-md);overflow:hidden;
-  display:grid;
-  grid-template-rows:auto auto 1fr;
+  display:flex;flex-direction:column;
   transition:transform .18s,border-color .18s,box-shadow .18s;
 }
 .card:hover{
