@@ -62,8 +62,17 @@ create policy "convo update" on conversations for update to authenticated using 
 create policy "convo delete" on conversations for delete to authenticated using (public.is_admin());
 create policy "msg select" on messages for select to authenticated using (convo_id = auth.uid() or public.is_admin());
 create policy "msg insert" on messages for insert to authenticated
-  with check ((sender = 'buyer' and convo_id = auth.uid()) or (sender = 'admin' public.is_admin()));
+  with check ((sender = 'buyer' and convo_id = auth.uid()) or (sender = 'admin' and public.is_admin()));
 create policy "msg delete" on messages for delete to authenticated using (public.is_admin());
+
+create table if not exists fcm_tokens (
+  user_id text primary key,
+  token text not null,
+  updated_at timestamptz not null default now()
+);
+alter table fcm_tokens enable row level security;
+drop policy if exists "Anyone can manage fcm_tokens" on fcm_tokens;
+create policy "Anyone can manage fcm_tokens" on fcm_tokens for all using (true) with check (true);
 
 alter publication supabase_realtime drop table if exists public.conversations, public.messages;
 alter publication supabase_realtime add table public.conversations, public.messages;

@@ -120,5 +120,37 @@ $("save").onclick=async()=>{
   }catch(err){$("fmsg").textContent="Error: "+(err.message||JSON.stringify(err));}
   $("save").textContent="Save";
 };
+
+window.saveAdminFcmToken = async function(token) {
+  try {
+    const { error } = await sb.from("fcm_tokens").upsert({
+      user_id: "admin",
+      token: token,
+      updated_at: new Date().toISOString()
+    });
+    if (error) console.error("FCM Token save error:", error);
+  } catch(e) {}
+};
+
+async function requestNotificationPermission() {
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
+      const perm = await window.Capacitor.Plugins.PushNotifications.requestPermissions();
+      if (perm.receive === 'granted') {
+        window.Capacitor.Plugins.PushNotifications.register();
+      }
+    }
+  } catch(e) {}
+}
+
+requestNotificationPermission();
+
+setTimeout(async () => {
+  const t = localStorage.getItem('fcm_token');
+  if (t) {
+    window.saveAdminFcmToken(t);
+  }
+}, 1500);
+
 load();
 </script></body></html>

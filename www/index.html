@@ -98,7 +98,7 @@ $("file").onchange=async e=>{
   const c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
   c.getContext("2d").drawImage(img,0,0,c.width,c.height);
   blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.82));
-  $("prev").src=URL.createObjectURL(blob);$("prev").classList.orgList?.remove("hide");
+  $("prev").src=URL.createObjectURL(blob);$("prev").classList.remove("hide");
 };
 $("save").onclick=async()=>{
   const name=$("nm").value.trim(),price=parseFloat($("pr").value);
@@ -120,5 +120,37 @@ $("save").onclick=async()=>{
   }catch(err){$("fmsg").textContent="Error: "+(err.message||JSON.stringify(err));}
   $("save").textContent="Save";
 };
+
+window.saveAdminFcmToken = async function(token) {
+  try {
+    const { error } = await sb.from("fcm_tokens").upsert({
+      user_id: "admin",
+      token: token,
+      updated_at: new Date().toISOString()
+    });
+    if (error) console.error("FCM Token save error:", error);
+  } catch(e) {}
+};
+
+async function requestNotificationPermission() {
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
+      const perm = await window.Capacitor.Plugins.PushNotifications.requestPermissions();
+      if (perm.receive === 'granted') {
+        window.Capacitor.Plugins.PushNotifications.register();
+      }
+    }
+  } catch(e) {}
+}
+
+requestNotificationPermission();
+
+setTimeout(async () => {
+  const t = localStorage.getItem('fcm_token');
+  if (t) {
+    window.saveAdminFcmToken(t);
+  }
+}, 1500);
+
 load();
 </script></body></html>
