@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "359190269435",
+    "project_id": "pyro-1e3ef",
+    "storage_bucket": "pyro-1e3ef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:359190269435:android:687489b3cfed62147d0f5e",
+        "android_client_info": {
+          "package_name": "com.myshop.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJl0wGnQNCi0VBhCnnpTJhdUuGQXj64jw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

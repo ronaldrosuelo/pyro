@@ -105,6 +105,18 @@ $("tform").onsubmit=async e=>{
 
   sb.from("conversations").update({last_text:"You: "+body.slice(0,70),last_at:m.created_at,unread:false}).eq("id",active.id);
 
+  // Notify buyer
+  try{
+    const{data:t}=await sb.from("fcm_tokens").select("token").eq("user_id",active.id).single();
+    if(t?.token){
+      fetch(`${C.SUPABASE_URL}/functions/v1/push-notify`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${C.SUPABASE_ANON_KEY}`},
+        body:JSON.stringify({token:t.token,title:"Flashpoint Pyro",body})
+      });
+    }
+  }catch(e){}
+
 };
 
 function start(){
