@@ -6,6 +6,20 @@
 <title>Flashpoint Pyro</title>
 <meta property="og:title" content="Flashpoint Pyro"><meta property="og:description" content="Browse items and place your order.">
 <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="chat.css"><script src="config.js"></script>
+<style>
+.card .media{cursor:zoom-in}
+.lb{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,20,.88);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s}
+.lb.open{opacity:1;pointer-events:auto}
+.lb-box{position:relative;width:100%;max-width:560px;max-height:92vh;overflow:auto;background:#121a3a;color:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:scale(.96);transition:transform .2s}
+.lb.open .lb-box{transform:scale(1)}
+.lb-img{display:block;width:100%;max-height:62vh;object-fit:contain;background:#0b1026;border-radius:16px 16px 0 0}
+.lb-info{padding:16px 18px 20px}
+.lb-name{font-size:1.2rem;font-weight:700}
+.lb-price{margin:4px 0 10px;font-size:1.25rem;font-weight:800;color:#ffc94d}
+.lb-desc{white-space:pre-line;line-height:1.5;opacity:.9}
+.lb-sold{display:inline-block;margin-top:10px;padding:3px 10px;border-radius:99px;background:#c0392b;font-size:.8rem}
+.lb-x{position:absolute;top:8px;right:8px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:22px;line-height:1;cursor:pointer}
+</style>
 </head><body>
 <header class="hero">
   <span class="eyebrow">🎆 Happy New Year</span>
@@ -16,25 +30,66 @@
   <div class="grid" id="grid"></div>
   <p class="empty hide" id="empty">No items yet. Check back soon.</p>
 </div>
+
+<div class="lb" id="lb" aria-hidden="true">
+  <div class="lb-box" role="dialog" aria-modal="true">
+    <button class="lb-x" id="lbx" aria-label="Close">×</button>
+    <img class="lb-img" id="lbimg" alt="">
+    <div class="lb-info">
+      <div class="lb-name" id="lbname"></div>
+      <div class="lb-price" id="lbprice"></div>
+      <div class="lb-desc" id="lbdesc"></div>
+      <span class="lb-sold hide" id="lbsold">Sold out</span>
+    </div>
+  </div>
+</div>
+
 <footer>🎇 Celebrate safely and have a bright New Year</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 const C=window.CONFIG,sb=supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 document.title=C.SHOP_NAME;shop.textContent=C.SHOP_NAME;tag.textContent=C.TAGLINE;
-let items=[],cat="All",categories=["All"];
+let items=[],shown=[],cat="All",categories=["All"];
+
 function render(){
   chips.innerHTML=categories.map(c=>`<button class="chip ${c===cat?"on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
   chips.classList.toggle("hide",categories.length<2);
-  const list=items.filter(i=>cat==="All"||i.category===cat);
-  empty.classList.toggle("hide",list.length>0);
-  grid.innerHTML=list.map(i=>`<article class="card ${i.sold_out?"sold":""}">
+  shown=items.filter(i=>cat==="All"||i.category===cat);
+  empty.classList.toggle("hide",shown.length>0);
+  grid.innerHTML=shown.map((i,n)=>`<article class="card ${i.sold_out?"sold":""}" data-n="${n}">
     <div class="media">${i.image_url?`<img src="${esc(i.image_url)}" alt="${esc(i.name)}" loading="lazy">`:`<div class="ph"></div>`}${i.sold_out?`<span class="badge">Sold out</span>`:""}</div>
     <div class="body"><div class="name">${esc(i.name)}</div><div class="price">₱${Number(i.price).toLocaleString()}</div>
     ${i.description?`<div class="desc">${esc(i.description)}</div>`:""}
     </div></article>`).join("");
 }
 chips.onclick=e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;render()}};
+
+// Lightbox
+function openLb(i){
+  if(!i||!i.image_url)return;
+  lbimg.src=i.image_url;lbimg.alt=i.name||"";
+  lbname.textContent=i.name||"";
+  lbprice.textContent="₱"+Number(i.price).toLocaleString();
+  lbdesc.textContent=i.description||"";
+  lbdesc.classList.toggle("hide",!i.description);
+  lbsold.classList.toggle("hide",!i.sold_out);
+  lb.classList.add("open");lb.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeLb(){
+  lb.classList.remove("open");lb.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+grid.addEventListener("click",e=>{
+  const m=e.target.closest(".media");if(!m)return;
+  const card=m.closest(".card");
+  openLb(shown[+card.dataset.n]);
+});
+lb.addEventListener("click",e=>{if(e.target===lb)closeLb()});
+lbx.onclick=closeLb;
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLb()});
+
 async function loadItems(){
   const{data,error}=await sb.from("products").select("*").order("created_at",{ascending:false});
   if(error){empty.textContent="Couldn't load items. Refresh the page.";empty.classList.remove("hide");return}

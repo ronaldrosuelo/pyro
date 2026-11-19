@@ -11,7 +11,8 @@
 <section id="login" class="panel hide">
   <h1 style="font-size:1.4rem">Admin login</h1>
   <label for="em">Email</label><input id="em" type="email" autocomplete="username">
-  <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password">
+  <label for="pw">Password</label>
+  <div class="row" style="gap:8px"><input id="pw" type="password" autocomplete="current-password" style="flex:1"><button type="button" class="btn sm" id="togglepw" onclick="const p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'👁':'🙈'">👁</button></div>
   <div class="msg" id="lmsg"></div>
   <button class="btn pri" id="lbtn" style="width:100%">Log in</button>
 </section>

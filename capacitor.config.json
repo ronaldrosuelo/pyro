@@ -3,8 +3,7 @@
   "appName": "pyro app",
   "webDir": "www",
   "server": {
-    "androidScheme": "https",
-    "hostname": "your-site.vercel.app",
-    "cleartext": true
+    "url": "https://flashpointpyro.vercel.app/admin.html",
+    "cleartext": false
   }
 }

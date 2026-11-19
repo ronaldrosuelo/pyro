@@ -6,7 +6,8 @@
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b1026">
 <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="chat.css"><script src="config.js"></script>
 <style>
-.hero.sm{padding:calc(env(safe-area-inset-top) + 22px) 16px 18px}.hero.sm h1{font-size:clamp(1.5rem,5vw,2.2rem)}
+.hero.sm{padding:calc(env(safe-area-inset-top) + 22px) 16px 18px}
+.hero.sm h1{font-size:clamp(1.5rem,5vw,2.2rem)}
 .item{flex-wrap:wrap;border-radius:16px;padding:12px}
 .item img,.item .ph{width:64px;height:64px;border-radius:10px}
 .pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px;margin-left:6px;vertical-align:1px}
@@ -25,14 +26,16 @@ input[type=file]{padding:10px;background:#0f1530}
 </head><body>
 <header class="hero sm">
   <span class="eyebrow">Admin</span>
-  <h1>Flashpoint Pyro</h1>
+  <div class="row" style="justify-content:space-between">
+    <h1>Flashpoint Pyro</h1>
+    <a class="btn sm" href="messages.html">Messages</a>
+  </div>
 </header>
 <div class="wrap">
 <section id="list" class="admin-list">
   <div class="stats"><div><b id="n1">0</b><span>Available</span></div><div><b id="n2">0</b><span>Sold out</span></div></div>
   <div id="items"></div>
   <div class="fabbar"><button class="btn pri" id="add">Add item</button></div>
-  <div class="fabbar" style="background:transparent;padding-top:8px"><a href="messages.html" class="btn sm" style="width:100%">💬 Messages</a></div>
 </section>
 
 <section id="form" class="panel hide">
@@ -114,7 +117,7 @@ $("save").onclick=async()=>{
     const r=editing?await sb.from("products").update(row).eq("id",editing.id):await sb.from("products").insert(row);
     if(r.error)throw r.error;
     load();
-  }catch(err){$("fmsg").textContent="Couldn't save. Check your connection and try again."}
+  }catch(err){$("fmsg").textContent="Error: "+(err.message||JSON.stringify(err));}
   $("save").textContent="Save";
 };
 load();
